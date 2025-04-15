@@ -1,0 +1,27 @@
+\section{Introduction}
+Clustering analysis plays a fundamental role in revealing hidden patterns in complex biological data. It involves grouping similar data points such that those within a cluster are more similar to each other than to those in other clusters. In the field of bioinformatics, clustering has proven instrumental in tasks such as disease subtyping, biomarker discovery, and patient stratification—essential steps toward personalized medicine. Notable successes include the identification of distinct subtypes in diseases such as asthma, Parkinson’s disease, and various cancers, where clustering has enabled deeper biological insights and guided downstream predictive modeling.
+
+However, the increasing complexity and volume of biomedical data have introduced new challenges that traditional clustering methods—such as k-means or hierarchical clustering—are often not well-equipped to address. Modern datasets, particularly in genomics and cancer research, are frequently multimodal, combining data from gene expression, DNA methylation, miRNA expression, mutations, and more. These data types vary in structure—continuous, binary, categorical—and span tens of thousands of features, only a fraction of which are typically informative. This high dimensionality and heterogeneity demand advanced statistical methods capable of integrative analysis and feature selection across multiple data views.
+
+Integrative clustering methods have emerged as a powerful solution to these challenges 
+by simultaneously analyzing multiple data types to identify robust, biologically meaningful
+subtypes. Among the most promising approaches are Bayesian frameworks, 
+which incorporate prior knowledge to improve inference quality. 
+While traditional Bayesian methods often rely on computationally intensive 
+techniques such as Markov Chain Monte Carlo (MCMC), more recent developments like
+ Variational Bayes (VB) provide faster and more scalable alternatives by transforming 
+ the inference task into an optimization problem.
+
+The iClusterVB R package, introduced by Alnajjar and Lu (2024), leverages a
+ variational Bayesian approach to enable efficient integrative clustering and 
+ feature selection in high-dimensional, mixed-type data. The package builds upon the 
+ strengths of earlier tools like iClusterPlus and iClusterBayes while addressing
+  their computational limitations. Key features of iClusterVB include support for continuous,
+   discrete, and categorical data types; automatic selection of the optimal number of clusters;
+    and a scalable algorithm well-suited for modern multi-omics applications.
+
+In this review, we aim to assess the practical utility and generalizability of 
+the iClusterVB method by applying it to both simulated data and a real-world dataset: 
+
+\textcolor{red}{
+Waiting to be added: describe the real data set or explain the simulated data set.}

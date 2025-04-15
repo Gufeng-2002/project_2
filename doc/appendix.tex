@@ -1,0 +1,345 @@
+\section{Appendix}
+
+% \subsection{R code-1}
+% \begin{lstlisting}[language=R, caption=R code example]
+% # Load the iClusterVB package
+% library(iClusterVB)
+% # Load the cowplot library to combine plots
+% library(cowplot)
+
+% # Part 1: simulation data
+% # Load the built-in simulated data
+% get(data("sim_data"))
+
+% # Create a list of data views from the simulated dataset
+% list_sim_data <- list(
+%   gauss_1 = sim_data$continuous1_data,
+%   gauss_2 = sim_data$continuous2_data,
+%   multinomial_1 = sim_data$binary_data,
+%   poisson_1 = sim_data$count_data
+% )
+
+% # Re-code 0's to 2's for the multinomial data (iClusterVB requires non-zero values)
+% list_sim_data$multinomial_1[list_sim_data$multinomial_1 == 0] <- 2
+
+% # Optional: check first few rows of each dataset
+% head(list_sim_data$gauss_1[, 1:6])
+% head(list_sim_data$gauss_2[, 1:6])
+% head(list_sim_data$multinomial_1[, 1:6])
+% head(list_sim_data$poisson_1[, 1:6])
+
+% # Specify the distribution for each view
+% dist_sim_data <- c("gaussian", "gaussian", "multinomial", "poisson")
+
+% # Run the iClusterVB model on the simulated data
+% set.seed(123)
+% fit_sim_data <- iClusterVB(
+%   mydata = list_sim_data,
+%   dist = dist_sim_data,
+%   K = 8,  # max clusters to allow algorithm to reduce
+%   initial_method = "VarSelLCM",
+%   VS_method = 1,  # enable feature selection
+%   max_iter = 100
+% )
+
+% # Summarize the fitted model
+% summary(fit_sim_data, rho = 0.5)
+
+% # Compare estimated clusters with ground truth
+% table(fit_sim_data$cluster, sim_data$cluster_true)
+
+% # plot piplot
+% piplot(fit_sim_data , nrow = 2, ncol = 2, align = "hv ")
+
+% # Generate cluster-specific heatmaps from iClusterVB results
+% hmaps_sim <- chmap(
+%   fit_sim_data,
+%   rho = 0,
+%   cols = c(
+%     "#000000",  # black
+%     "#F8766D",  # reddish-pink
+%     "#00BA38",  # green
+%     "#619CFF"   # blue
+%   ),
+%   scale = "none"  # no scaling applied to preserve original feature scale
+% )
+
+% # Arrange the generated heatmaps in a 2x2 grid layout
+% plot_grid(
+%   plotlist = hmaps_sim,
+%   ncol = 2,
+%   nrow = 2,
+%   labels = c("(A)", "(B)", "(C)", "(D)")
+% )
+
+% \end{lstlisting}
+
+% \subsection{R code-BRCA TCG}
+% \begin{lstlisting}[language=R, caption=R code example]
+% ```{r}
+% # Load and transpose breast cancer data from CSV files 
+% gene_exp <- read.csv(file = "C:...Project2/Breast-TCGA/Breast-TCGA/context1_GE.csv", header = TRUE, row.names = 1)
+% gene_exp <- t(gene_exp)
+
+% methy_exp <- read.csv(file = "C:...Project2/Breast-TCGA/Breast-TCGA/context2_Meth.csv", header = TRUE, row.names = 1)
+% methy_exp <- t(methy_exp)
+
+% mirna_exp <- read.csv(file = "C:...Project2/Breast-TCGA/Breast-TCGA/context3_miRNA.csv", header = TRUE, row.names = 1)
+% mirna_exp <- t(mirna_exp)
+
+% # Load clinical/survival data
+% clinical <- read.csv(file = "C:/Users/hadis/OneDrive/Documents/seminar/Project2/Breast-TCGA/Breast-TCGA/Table1Nature.csv", header = TRUE)
+
+
+% # Extract  PatientID 
+% id <- sub("TCGA-\\w+-(\\w+)", "\\1", clinical$PatientID)
+% clinical$id <- id
+
+% # Scale the data
+% gene_exp_scale <- apply(gene_exp, 2, scale)
+% methy_exp_scale <- apply(methy_exp, 2, scale)
+% mirna_exp_scale <- apply(mirna_exp, 2, scale)
+
+% # Combine into a list for iClusterVB input
+% list_brca_data <- list(
+%   gene_exp_scale,
+%   methy_exp_scale,
+%   mirna_exp_scale
+% )
+
+% # Specify data distribution for each view
+% dist_brca_data <- c("gaussian", "gaussian", "gaussian")
+
+% library("iClusterVB")
+
+% set.seed(20204)  
+
+% fit_brca <- iClusterVB(
+%   mydata = list_brca_data,
+%   dist = dist_brca_data,
+%   K = 6,                        
+%   initial_method = "VarSelLCM",
+%   initial_vs_prob = 0.1,       # Prior probability of variable selection
+%   max_iter = 100,              # Max iterations for convergence
+%   VS_method = 1,               
+%   per = 100                   
+% )
+
+% summary(fit_brca)
+
+% library(ggplot2)
+
+% var_gene <- apply(gene_exp_scale, 2, var)
+% var_methy <- apply(methy_exp_scale, 2, var)
+% var_mirna <- apply(mirna_exp_scale, 2, var)
+
+% df_var <- data.frame(
+%   variance = c(var_gene, var_methy, var_mirna),
+%   type = c(rep("Gene", length(var_gene)), rep("Methy", length(var_methy)), rep("miRNA", length(var_mirna)))
+% )
+
+% ggplot(df_var, aes(x = variance, fill = type)) +
+%   geom_histogram(bins = 50, alpha = 0.7, position = "identity") +
+%   scale_x_log10() +
+%   theme_minimal() +
+%   ggtitle("Feature Variance Distribution Across Omics")
+
+% library(pheatmap)
+
+% pheatmap(cor(t(gene_exp_scale)), show_rownames = FALSE, show_colnames = FALSE, main = "Sample Correlation - Gene Exp")
+% pheatmap(cor(t(methy_exp_scale)), show_rownames = FALSE, show_colnames = FALSE, main = "Sample Correlation - Methylation")
+% pheatmap(cor(t(mirna_exp_scale)), show_rownames = FALSE, show_colnames = FALSE, main = "Sample Correlation - miRNA")
+
+
+% pca_plot <- function(data, title) {
+%   pca <- prcomp(data, center = TRUE, scale. = TRUE)
+%   pca_df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+  
+%   ggplot(pca_df, aes(x = PC1, y = PC2)) +
+%     geom_point(alpha = 0.6) +
+%     ggtitle(title) +
+%     theme_minimal()
+% }
+
+% pca_plot(gene_exp_scale, "PCA - Gene Expression")
+% pca_plot(methy_exp_scale, "PCA - Methylation")
+% pca_plot(mirna_exp_scale, "PCA - miRNA Expression")
+
+% \end{lstlisting}
+
+
+\subsection{Tables}
+
+\begin{table}[!h]
+\centering
+\caption{Normality test for Gaussian distribution (first 1000 columns in the simulation data)}
+\label{tab:normal_metrics}
+\begin{tabular}{r l r r r}
+\toprule
+\textbf{Index} & \textbf{Variable} & \textbf{Skewness} & \textbf{Kurtosis} & \textbf{Normality p-value} \\
+\midrule
+0  & gauss\_2\_396 & -0.1079 & -0.0766 & 0.7817 \\
+1  & gauss\_1\_225 & 0.0277 & -0.1564 & 0.9313 \\
+2  & gauss\_2\_18  & -0.0052 & -1.5656 & 0.0000 \\
+3  & gauss\_1\_90  & -0.1858 & 0.3446  & 0.2363 \\
+4  & gauss\_1\_375 & 0.0521  & -0.0305 & 0.9374 \\
+5  & gauss\_2\_217 & -0.0205 & -0.1222 & 0.9708 \\
+6  & gauss\_1\_490 & 0.0701  & -0.0306 & 0.8950 \\
+7  & gauss\_1\_260 & -0.0380 & 0.0563  & 0.8946 \\
+8  & gauss\_1\_124 & 0.1376  & -0.2938 & 0.4495 \\
+9  & gauss\_1\_400 & -0.1274 & -0.3238 & 0.4176 \\
+10 & gauss\_1\_167 & 0.1571  & -0.3698 & 0.2736 \\
+11 & gauss\_1\_18  & -0.0073 & -1.5921 & 0.0000 \\
+12 & gauss\_1\_318 & 0.0031  & 0.1366  & 0.8125 \\
+13 & gauss\_1\_220 & 0.1701  & -0.4797 & 0.1043 \\
+14 & gauss\_1\_308 & -0.0471 & -0.3887 & 0.3883 \\
+15 & gauss\_1\_385 & 0.0960  & -0.1883 & 0.7422 \\
+16 & gauss\_2\_210 & 0.0282  & 0.3164  & 0.5181 \\
+17 & gauss\_2\_354 & -0.0808 & 0.2698  & 0.5219 \\
+18 & gauss\_1\_369 & 0.0930  & 0.0298  & 0.7920 \\
+19 & gauss\_1\_147 & -0.2302 & 0.1885  & 0.2441 \\
+20 & gauss\_1\_50  & -0.0317 & -1.6111 & 0.0000 \\
+21 & gauss\_1\_405 & -0.0403 & 0.0832  & 0.8590 \\
+22 & gauss\_1\_117 & 0.0661  & -0.3219 & 0.5403 \\
+23 & gauss\_2\_179 & -0.0018 & -0.3278 & 0.5762 \\
+24 & gauss\_2\_249 & 0.3049  & 0.6479  & 0.0258 \\
+25 & gauss\_1\_68  & -0.1215 & -0.1024 & 0.7268 \\
+26 & gauss\_1\_299 & 0.2415  & -0.1434 & 0.2882 \\
+27 & gauss\_1\_118 & -0.2193 & 0.0210  & 0.3537 \\
+28 & gauss\_2\_48  & 0.0079  & -1.5732 & 0.0000 \\
+29 & gauss\_2\_484 & 0.1617  & -0.2456 & 0.4565 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[!h]
+\centering
+\caption{Poisson test for Poisson distribution (1500 to 2000 columns in the simulation data)}
+\label{tab:poisson_metrics}
+\begin{tabular}{r l r r}
+\toprule
+\textbf{Index} & \textbf{Variable} & \textbf{Statistic} & \textbf{Poisson p-value} \\
+\midrule
+0  & poisson\_1\_347 & 8.1418 & 0.4197 \\
+1  & poisson\_1\_130 & 3.3996 & 0.8457 \\
+2  & poisson\_1\_278 & 2.0546 & 0.9568 \\
+3  & poisson\_1\_31  & 1896309619.6291 & 0.0000 \\
+4  & poisson\_1\_233 & 2.1521 & 0.9509 \\
+5  & poisson\_1\_405 & 7.6532 & 0.3642 \\
+6  & poisson\_1\_343 & 4.8117 & 0.6829 \\
+7  & poisson\_1\_458 & 4.6286 & 0.5923 \\
+8  & poisson\_1\_336 & 9.0090 & 0.3415 \\
+9  & poisson\_1\_222 & 7.1677 & 0.4116 \\
+10 & poisson\_1\_440 & 6.7327 & 0.3463 \\
+11 & poisson\_1\_357 & 7.3086 & 0.3975 \\
+12 & poisson\_1\_341 & 9.9632 & 0.1907 \\
+13 & poisson\_1\_113 & 5.7099 & 0.4565 \\
+14 & poisson\_1\_420 & 1.8409 & 0.9337 \\
+15 & poisson\_1\_447 & 12.7249 & 0.0476 \\
+16 & poisson\_1\_248 & 7.0096 & 0.5356 \\
+17 & poisson\_1\_417 & 7.0637 & 0.2159 \\
+18 & poisson\_1\_194 & 2.7987 & 0.8337 \\
+19 & poisson\_1\_9   & 6684971.6159 & 0.0000 \\
+20 & poisson\_1\_61  & 2.9649 & 0.8132 \\
+21 & poisson\_1\_22  & 952499618.9309 & 0.0000 \\
+22 & poisson\_1\_407 & 0.9116 & 0.9887 \\
+23 & poisson\_1\_282 & 41.5326 & 0.0000 \\
+24 & poisson\_1\_129 & 8.1200 & 0.4218 \\
+25 & poisson\_1\_421 & 7.0042 & 0.4284 \\
+26 & poisson\_1\_204 & 24.9668 & 0.0008 \\
+27 & poisson\_1\_427 & 3.0758 & 0.8779 \\
+28 & poisson\_1\_258 & 10.4206 & 0.1080 \\
+29 & poisson\_1\_383 & 5.0726 & 0.6511 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Bernoulli test for Bernoulli distribution (1000 to 1500 columns in the simulation data)}
+\label{tab:bernoulli_metrics}
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{Index} & \textbf{Variable} & \textbf{Chi2 Statistic} & \textbf{p-value} & \textbf{Estimated $p$} & \textbf{\# 0s} & \textbf{\# 1s} \\
+\midrule
+0 & multinomial\_1\_353 & 0.7407 & 0.3894 & 0.1167 & 212 & 28 \\
+1 & multinomial\_1\_345 & 1.6667 & 0.1967 & 0.0750 & 222 & 18 \\
+2 & multinomial\_1\_196 & 1.6667 & 0.1967 & 0.0750 & 222 & 18 \\
+3 & multinomial\_1\_103 & 1.1574 & 0.2820 & 0.1208 & 211 & 29 \\
+4 & multinomial\_1\_83 & 1.1574 & 0.2820 & 0.0792 & 221 & 19 \\
+5 & multinomial\_1\_499 & 1.6667 & 0.1967 & 0.0750 & 222 & 18 \\
+6 & multinomial\_1\_22 & 106.6667 & 0.0000 & 0.3000 & 168 & 72 \\
+7 & multinomial\_1\_138 & 0.4167 & 0.5186 & 0.0875 & 219 & 21 \\
+8 & multinomial\_1\_360 & 4.6296 & 0.0314 & 0.1417 & 206 & 34 \\
+9 & multinomial\_1\_72 & 0.7407 & 0.3894 & 0.1167 & 212 & 28 \\
+10 & multinomial\_1\_486 & 0.0000 & 1.0000 & 0.1000 & 216 & 24 \\
+11 & multinomial\_1\_101 & 2.9630 & 0.0852 & 0.0667 & 224 & 16 \\
+12 & multinomial\_1\_90 & 0.0463 & 0.8296 & 0.0958 & 217 & 23 \\
+13 & multinomial\_1\_42 & 161.1574 & 0.0000 & 0.3458 & 157 & 83 \\
+14 & multinomial\_1\_271 & 0.0463 & 0.8296 & 0.0958 & 217 & 23 \\
+15 & multinomial\_1\_252 & 0.0000 & 1.0000 & 0.1000 & 216 & 24 \\
+16 & multinomial\_1\_110 & 0.7407 & 0.3894 & 0.1167 & 212 & 28 \\
+17 & multinomial\_1\_415 & 0.7407 & 0.3894 & 0.1167 & 212 & 28 \\
+18 & multinomial\_1\_122 & 0.7407 & 0.3894 & 0.0833 & 220 & 20 \\
+19 & multinomial\_1\_230 & 0.4167 & 0.5186 & 0.0875 & 219 & 21 \\
+20 & multinomial\_1\_403 & 1.6667 & 0.1967 & 0.0750 & 222 & 18 \\
+21 & multinomial\_1\_88 & 0.4167 & 0.5186 & 0.1125 & 213 & 27 \\
+22 & multinomial\_1\_126 & 7.8241 & 0.0052 & 0.1542 & 203 & 37 \\
+23 & multinomial\_1\_130 & 1.1574 & 0.2820 & 0.0792 & 221 & 19 \\
+24 & multinomial\_1\_439 & 0.4167 & 0.5186 & 0.1125 & 213 & 27 \\
+25 & multinomial\_1\_16 & 89.6296 & 0.0000 & 0.2833 & 172 & 68 \\
+26 & multinomial\_1\_340 & 3.7500 & 0.0528 & 0.1375 & 207 & 33 \\
+27 & multinomial\_1\_293 & 0.0000 & 1.0000 & 0.1000 & 216 & 24 \\
+28 & multinomial\_1\_64 & 0.0000 & 1.0000 & 0.1000 & 216 & 24 \\
+29 & multinomial\_1\_82 & 0.4167 & 0.5186 & 0.0875 & 219 & 21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!h]
+    \centering
+    \caption{Normality test for all variables in the breast cancer dataset}
+    \label{tab:normality_brca}
+    \begin{tabular}{r l r r r}
+        \toprule
+        \textbf{Index} & \textbf{Variable} & \textbf{Skewness} & \textbf{Kurtosis} & \textbf{Normality $p$-value} \\
+        \midrule
+        0  & id                        & 6.9517 & 48.7647 & 0.0000 \\
+        1  & radius\_mean              & -0.4930 & 0.2500 & 0.0006 \\
+        2  & texture\_mean             & 0.3480 & 0.1690 & 0.0207 \\
+        3  & perimeter\_mean           & -0.5277 & 0.3695 & 0.0002 \\
+        4  & area\_mean                & -0.5650 & 0.3883 & 0.0001 \\
+        5  & smoothness\_mean          & 0.6002 & 1.5932 & 0.0000 \\
+        6  & compactness\_mean         & 1.0849 & 1.7566 & 0.0000 \\
+        7  & concavity\_mean           & 2.9089 & 15.0911 & 0.0000 \\
+        8  & concave points\_mean      & 0.8717 & 0.8859 & 0.0000 \\
+        9  & symmetry\_mean            & 0.5683 & 1.0837 & 0.0000 \\
+        10 & fractal\_dimension\_mean  & 1.6090 & 4.2304 & 0.0000 \\
+        11 & radius\_se                & 1.1020 & 2.0694 & 0.0000 \\
+        12 & texture\_se               & 0.5976 & 0.5768 & 0.0000 \\
+        13 & perimeter\_se             & 0.5015 & -0.0299 & 0.0009 \\
+        14 & area\_se                  & 0.1348 & 0.2530 & 0.3185 \\
+        15 & smoothness\_se            & 1.4897 & 2.9455 & 0.0000 \\
+        16 & compactness\_se           & 2.1325 & 5.4932 & 0.0000 \\
+        17 & concavity\_se             & 5.4665 & 45.6831 & 0.0000 \\
+        18 & concave points\_se        & 2.0728 & 9.9365 & 0.0000 \\
+        19 & symmetry\_se              & 1.3380 & 3.0752 & 0.0000 \\
+        20 & fractal\_dimension\_se    & 4.2709 & 26.7974 & 0.0000 \\
+        21 & radius\_worst             & -0.4131 & 0.0001 & 0.0073 \\
+        22 & texture\_worst            & 0.1375 & -0.2272 & 0.3988 \\
+        23 & perimeter\_worst          & -0.4131 & 0.0143 & 0.0072 \\
+        24 & area\_worst               & -0.4709 & 0.0885 & 0.0017 \\
+        25 & smoothness\_worst         & 0.2805 & 0.2833 & 0.0477 \\
+        26 & compactness\_worst        & 0.8333 & 0.8487 & 0.0000 \\
+        27 & concavity\_worst          & 1.6051 & 5.2030 & 0.0000 \\
+        28 & concave points\_worst     & 0.0221 & -0.2058 & 0.7610 \\
+        29 & symmetry\_worst           & 0.1265 & 0.1762 & 0.4333 \\
+        30 & fractal\_dimension\_worst & 1.3515 & 2.8535 & 0.0000 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+
+

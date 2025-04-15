@@ -1,37 +1,45 @@
-\documentclass[12pt]{article}
-\input{settings/packages.tex}
-\input{settings/mycommands.tex}
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{multirow}
 
-\title{
-This is title
-}
 
-\author{Feng Gu(T00751197), author 2 and author 3}
-% \date{\today}
+
+\geometry{margin=1in}
+\title{Review of iClusterVB: A Fast Integrative Clustering and Feature Selection Approach for High-Dimensional Data}
+\author{Hadiseh Azadehyaei (T00726889) \\ Feng Gu (T00751197)}
+\date{Winter 2025}
 
 \begin{document}
+
 \maketitle
 
-\begin{center}
-    \textbf{\large Abstract}
-    Here to attach abstract.
-\end{center}
+% \section{Abstract}
+% Our aim is to explore the R package introduced in the project and try to
+% apply this novel framework to other related datasets. The topic of this project comes from 
+% the data science seminar on February 5, 2024. The detailed information is as follows:
 
-\section{Section 1}
-Start of this document.
+% \begin{itemize}
+%     \item \textbf{Topic:} iClusterVB: A fast integrative clustering and feature selection approach for high-dimensional data
+%     \item \textbf{Date:} 5 February 2024
+%     \item \textbf{Speaker:} Dr. Zihang Lu, Department of Public Health Sciences and Department of Mathematics and Statistics, Queen's University
+%     \item \textbf{Presentation:} Given on February 5, 2024, by Dr. Zihang Lu from Queen's University
+% \end{itemize}
 
-\[
-E = mc^2
-\]
-
-\begin{figure}[!h]
-    \includegraphics[width=.9\textwidth]
-    {/Users/gufeng/2025_winter/DASC_5420/assignments/Assignment1/images/question_5_g.png}
-    \caption{A caption}
-    \label{default-label}
-\end{figure}
+% \input{introduction.tex}
+\input{dataprepare.tex}
+% \input{iVBmethodology.tex}
+\input{iVBimplement.tex}
+\input{iVBimplement2.tex}
+% \input{result.tex}
+% \input{conclusion.tex}
 
 \clearpage
-\input{reference.tex}
+\input{appendix.tex}
+
 
 \end{document}
